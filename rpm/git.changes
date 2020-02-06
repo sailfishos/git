@@ -1,0 +1,52 @@
+* Thu Mar 22 2018 martyone <martyone@ubedi.net> - 1.8.3+mer2
+- [mer] Removed Requires rsync. Contributes to JB#36213
+
+* Wed Mar 21 2018 Martin Kampas <martin.kampas@jolla.com> - 1.8.3+mer1
+- [ew: minor style changes and manpage merge fix]
+- [jc: backported for 1.6.5 maint before advice_commit_before_merge]
+- [jes: I merged the later patches to that end.]
+- [mer] Converted to tar_git packaging format. Contribute to JB#36213
+- [PATCH] gitk: Heed the lines of context in merge commits
+- [PATCH] git-mergetool: Allow gvimdiff to be used as a mergetool
+
+* Wed Aug 28 2013 Robin Burchell <robin+git@viroteck.net> - 1.8.3-4
+- Re-enable build of git-subtree. Seems that the packaging for this went missing.
+
+* Fri Jun 14 2013 David Greaves <david@dgreaves.com> - 1.8.3-3
+- Split out perl-Git and perl-Git-SVN. Note perl-Git-SVN is not
+  currently installable in Mer due to missing SVN::Client
+
+* Sat Jun 08 2013 David Greaves <david@dgreaves.com> - 1.8.3-2
+- git subtree: properly handle remote refs
+   http://comments.gmane.org/gmane.comp.version-control.git/218064
+
+* Sat Jun 08 2013 David Greaves <david@dgreaves.com> - 1.8.3-1
+- New upstream
+- Packaging mods by Carsten Munk
+
+* Sat Jun 23 2012 David Greaves <david@dgreaves.com> - 1.7.10.3-2
+- Restore rsync Requires now we have rsync
+
+* Thu Jun 07 2012 David Greaves <david@dgreaves.com> - 1.7.10.3
+- New upstream
+
+* Wed May 21 2012 David Greaves <david@dgreaves.com> - 1.7.2.2
+- Remove rsync Requires - we'd like to Suggest: or Recommend: it but meh, our rpm doesn't do that
+- Make the python macros version independent
+
+* Wed Jan 19 2011 Jenny Lin <jenny.lin@intel.com> - 1.7.2.2
+- Add patch to fix CVE-2010-3906(BMC#12222).
+
+* Mon Sep 13 2010 Chris E Ferron <chris.e.ferron@intel.com> - 1.7.2.2
+- updated version to 1.7.2.2 from upstream. 
+- BMC#6605 
+
+* Wed Aug 25 2010 Chris E Ferron <chris.e.ferron@intel.com> - 1.6.1.3
+- apply upstream patch for CVE-2010-2542 [git] setup.c: Buffer overflow allow local users to gain privileges. BMC#5238
+
+* Tue Jun 16 2009 Passion Zhao <passion.zhao@intel.com> - 1.6.1.3-2
+- Add fix DoS issue by parsing extra arg strictly: 
+  https://www.redhat.com/archives/fedora-security-list/2009-June/msg00000.html
+
+* Fri Feb 27 2009 Zhang, Qiang Z <qiang.z.zhang@intel.com> - 1.6.1.3
+- Update to 1.6.1.3

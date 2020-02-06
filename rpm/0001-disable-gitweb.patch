@@ -1,0 +1,122 @@
+diff --git a/Documentation/Makefile b/Documentation/Makefile
+index 8fe829cc1b..239eceebec 100644
+--- a/Documentation/Makefile
++++ b/Documentation/Makefile
+@@ -15,14 +15,18 @@ MAN1_TXT += $(filter-out \
+ 		$(wildcard git-*.txt))
+ MAN1_TXT += git.txt
+ MAN1_TXT += gitk.txt
++ifdef USE_GITWEB
+ MAN1_TXT += gitweb.txt
++endif
+ 
+ MAN5_TXT += gitattributes.txt
+ MAN5_TXT += githooks.txt
+ MAN5_TXT += gitignore.txt
+ MAN5_TXT += gitmodules.txt
+ MAN5_TXT += gitrepository-layout.txt
++ifdef USE_GITWEB
+ MAN5_TXT += gitweb.conf.txt
++endif
+ 
+ MAN7_TXT += gitcli.txt
+ MAN7_TXT += gitcore-tutorial.txt
+diff --git a/Makefile b/Makefile
+index 09f98b777c..b0aba19436 100644
+--- a/Makefile
++++ b/Makefile
+@@ -659,10 +659,16 @@ clean-perl-script:
+ clean-python-script:
+ 	$(RM) $(SCRIPT_PYTHON_GEN)
+ 
++ifdef USE_GITWEB
+ SCRIPTS = $(SCRIPT_SH_GEN) \
+ 	  $(SCRIPT_PERL_GEN) \
+ 	  $(SCRIPT_PYTHON_GEN) \
+ 	  git-instaweb
++else
++SCRIPTS = $(SCRIPT_SH_GEN) \
++	  $(SCRIPT_PERL_GEN) \
++	  $(SCRIPT_PYTHON_GEN) 
++endif
+ 
+ ETAGS_TARGET = TAGS
+ 
+@@ -2263,6 +2269,7 @@ GIT-PERL-HEADER: $(PERL_HEADER_TEMPLATE) GIT-PERL-DEFINES Makefile
+ perllibdir:
+ 	@echo '$(perllibdir_SQ)'
+ 
++ifdef USE_GITWEB
+ .PHONY: gitweb
+ gitweb:
+ 	$(QUIET_SUBDIR0)gitweb $(QUIET_SUBDIR1) all
+@@ -2271,7 +2278,9 @@ git-instaweb: git-instaweb.sh GIT-SCRIPT-DEFINES
+ 	$(QUIET_GEN)$(cmd_munge_script) && \
+ 	chmod +x $@+ && \
+ 	mv $@+ $@
++endif # USE_GITWEB
+ else # NO_PERL
++ifdef USE_GITWEB
+ $(SCRIPT_PERL_GEN) git-instaweb: % : unimplemented.sh
+ 	$(QUIET_GEN)$(RM) $@ $@+ && \
+ 	sed -e '1s|#!.*/sh|#!$(SHELL_PATH_SQ)|' \
+@@ -2279,8 +2288,10 @@ $(SCRIPT_PERL_GEN) git-instaweb: % : unimplemented.sh
+ 	    unimplemented.sh >$@+ && \
+ 	chmod +x $@+ && \
+ 	mv $@+ $@
++endif # USE_GITWEB
+ endif # NO_PERL
+ 
++
+ # This makes sure we depend on the NO_PYTHON setting itself.
+ $(SCRIPT_PYTHON_GEN): GIT-BUILD-OPTIONS
+ 
+@@ -2920,7 +2931,9 @@ ifndef NO_PERL
+ 	$(INSTALL) -d -m 755 '$(DESTDIR_SQ)$(perllibdir_SQ)'
+ 	(cd perl/build/lib && $(TAR) cf - .) | \
+ 	(cd '$(DESTDIR_SQ)$(perllibdir_SQ)' && umask 022 && $(TAR) xof -)
++ifdef USE_GITWEB
+ 	$(MAKE) -C gitweb install
++endif # USE_GITWEB
+ endif
+ ifndef NO_TCLTK
+ 	$(MAKE) -C gitk-git install
+@@ -2972,12 +2985,16 @@ endif
+ 		  cp "$$execdir/git-remote-http$X" "$$execdir/$$p" || exit; } \
+ 	done && \
+ 	./check_bindir "z$$bindir" "z$$execdir" "$$bindir/git-add$X"
+-
++ifdef USE_GITWEB
+ .PHONY: install-gitweb install-doc install-man install-man-perl install-html install-info install-pdf
++else
++.PHONY: install-doc install-man install-man-perl install-html install-info install-pdf
++endif
+ .PHONY: quick-install-doc quick-install-man quick-install-html
++ifdef USE_GITWEB
+ install-gitweb:
+ 	$(MAKE) -C gitweb install
+-
++endif
+ install-doc: install-man-perl
+ 	$(MAKE) -C Documentation install
+ 
+@@ -3113,7 +3130,9 @@ clean: profile-clean coverage-clean cocciclean
+ 	$(MAKE) -C Documentation/ clean
+ 	$(RM) Documentation/GIT-EXCLUDED-PROGRAMS
+ ifndef NO_PERL
++ifdef USE_GITWEB
+ 	$(MAKE) -C gitweb clean
++endif # USE_GITWEB
+ 	$(RM) -r perl/build/
+ endif
+ 	$(MAKE) -C templates/ clean
+@@ -3148,7 +3167,9 @@ endif
+ ALL_COMMANDS = $(ALL_PROGRAMS) $(SCRIPT_LIB) $(BUILT_INS)
+ ALL_COMMANDS += git
+ ALL_COMMANDS += gitk
++ifdef USE_GITWEB
+ ALL_COMMANDS += gitweb
++endif
+ ALL_COMMANDS += git-gui git-citool
+ 
+ .PHONY: check-docs
