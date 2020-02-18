@@ -36,7 +36,6 @@ BuildRequires:  tcl
 BuildRequires:  zlib-devel >= 1.2
 
 Requires:       git-core = %{version}-%{release}
-Requires:       git-core-doc = %{version}-%{release}
 Requires:       perl-Git = %{version}-%{release}
 
 # Obsolete git-cvs if it's disabled
