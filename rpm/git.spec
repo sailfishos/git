@@ -31,7 +31,6 @@ BuildRequires:  make
 BuildRequires:  openssl-devel
 BuildRequires:  perl
 BuildRequires:  sed
-BuildRequires:  systemd
 BuildRequires:  tcl
 BuildRequires:  zlib-devel >= 1.2
 
