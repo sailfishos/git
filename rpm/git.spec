@@ -8,6 +8,7 @@
 %global gitexecdir          %{_libexecdir}/git-core
 %global use_new_rpm_filters 0
 %global _pkgdocdir %{_docdir}/%{name}-%{version}
+%global use_new_rpm_filters 1
 
 Name:           git
 Version:        2.25.0
@@ -182,6 +183,27 @@ DEFAULT_TEST_TARGET = prove
 GIT_PROVE_OPTS = --verbose --normalize %{?_smp_mflags} --formatter=TAP::Formatter::File
 GIT_TEST_OPTS = -x --verbose-log
 EOF
+
+# Filter bogus perl requires	
+# packed-refs comes from a comment in contrib/hooks/update-paranoid
+%if %{use_new_rpm_filters}
+%{?perl_default_filter}
+%global __requires_exclude %{?__requires_exclude:%__requires_exclude|}perl\\(packed-refs\\)
+%if ! %{defined perl_bootstrap}
+%global __requires_exclude %{?__requires_exclude:%__requires_exclude|}perl\\(Term::ReadKey\\)
+%endif
+# endif ! defined perl_bootstrap
+%else
+cat << \EOF > %{name}-req
+#!/bin/sh
+%{__perl_requires} $* |\
+sed -e '/perl(packed-refs)/d'
+EOF
+	
+%global __perl_requires %{_builddir}/%{name}-%{version}/%{name}-req
+chmod +x %{__perl_requires}
+%endif
+# endif use_new_rpm_filters
 
 %build
 # Improve build reproducibility
