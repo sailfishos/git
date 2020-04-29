@@ -11,7 +11,7 @@
 %global use_new_rpm_filters 1
 
 Name:           git
-Version:        2.25.0
+Version:        2.26.2
 Release:        1
 Summary:        Fast Version Control System
 License:        GPLv2
@@ -211,6 +211,8 @@ export SOURCE_DATE_EPOCH=$(date -r version +%%s 2>/dev/null)
 %make_build all %{?with_docs:docs}
 
 %make_build -C contrib/contacts/ all
+
+%make_build -C contrib/credential/netrc/
 
 %make_build -C contrib/diff-highlight/
 
