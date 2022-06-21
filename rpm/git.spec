@@ -15,7 +15,7 @@ Version:        2.26.2
 Release:        1
 Summary:        Fast Version Control System
 License:        GPLv2
-URL:            https://git-scm.com/
+URL:            https://github.com/sailfishos/git
 Source0:        %{name}-%{version}.tar.bz2
 Patch0:         0001-disable-gitweb.patch
 
