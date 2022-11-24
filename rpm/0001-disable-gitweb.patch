@@ -1,8 +1,18 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Marko Lemmetty <marko.lemmetty@jollamobile.com>
+Date: Thu, 6 Feb 2020 17:14:23 +0200
+Subject: [PATCH] disable gitweb
+
+---
+ Documentation/Makefile |  4 ++++
+ Makefile               | 24 +++++++++++++++++++++++-
+ 2 files changed, 27 insertions(+), 1 deletion(-)
+
 diff --git a/Documentation/Makefile b/Documentation/Makefile
-index 8fe829cc1b..239eceebec 100644
+index ed656db2ae90c1f5e0498867ec170395f6898b1f..5997c6766a88ef5efbaae559592d468b4d81bd73 100644
 --- a/Documentation/Makefile
 +++ b/Documentation/Makefile
-@@ -15,14 +15,18 @@ MAN1_TXT += $(filter-out \
+@@ -17,7 +17,9 @@ MAN1_TXT += $(filter-out \
  		$(wildcard git-*.txt))
  MAN1_TXT += git.txt
  MAN1_TXT += gitk.txt
@@ -10,9 +20,10 @@ index 8fe829cc1b..239eceebec 100644
  MAN1_TXT += gitweb.txt
 +endif
  
+ # man5 / man7 guides (note: new guides should also be added to command-list.txt)
  MAN5_TXT += gitattributes.txt
- MAN5_TXT += githooks.txt
- MAN5_TXT += gitignore.txt
+@@ -26,7 +28,9 @@ MAN5_TXT += gitignore.txt
+ MAN5_TXT += gitmailmap.txt
  MAN5_TXT += gitmodules.txt
  MAN5_TXT += gitrepository-layout.txt
 +ifdef USE_GITWEB
@@ -22,10 +33,10 @@ index 8fe829cc1b..239eceebec 100644
  MAN7_TXT += gitcli.txt
  MAN7_TXT += gitcore-tutorial.txt
 diff --git a/Makefile b/Makefile
-index 09f98b777c..b0aba19436 100644
+index 12be39ac49789898227d025c5249ce5d2842ae47..428462c4f8c3fca5b40add60069e33c27942b6d8 100644
 --- a/Makefile
 +++ b/Makefile
-@@ -659,10 +659,16 @@ clean-perl-script:
+@@ -651,10 +651,16 @@ clean-perl-script:
  clean-python-script:
  	$(RM) $(SCRIPT_PYTHON_GEN)
  
@@ -37,12 +48,12 @@ index 09f98b777c..b0aba19436 100644
 +else
 +SCRIPTS = $(SCRIPT_SH_GEN) \
 +	  $(SCRIPT_PERL_GEN) \
-+	  $(SCRIPT_PYTHON_GEN) 
++	  $(SCRIPT_PYTHON_GEN)
 +endif
  
  ETAGS_TARGET = TAGS
  
-@@ -2263,6 +2269,7 @@ GIT-PERL-HEADER: $(PERL_HEADER_TEMPLATE) GIT-PERL-DEFINES Makefile
+@@ -2362,6 +2368,7 @@ GIT-PERL-HEADER: $(PERL_HEADER_TEMPLATE) GIT-PERL-DEFINES Makefile
  perllibdir:
  	@echo '$(perllibdir_SQ)'
  
@@ -50,7 +61,7 @@ index 09f98b777c..b0aba19436 100644
  .PHONY: gitweb
  gitweb:
  	$(QUIET_SUBDIR0)gitweb $(QUIET_SUBDIR1) all
-@@ -2271,7 +2278,9 @@ git-instaweb: git-instaweb.sh GIT-SCRIPT-DEFINES
+@@ -2370,7 +2377,9 @@ git-instaweb: git-instaweb.sh GIT-SCRIPT-DEFINES
  	$(QUIET_GEN)$(cmd_munge_script) && \
  	chmod +x $@+ && \
  	mv $@+ $@
@@ -58,9 +69,9 @@ index 09f98b777c..b0aba19436 100644
  else # NO_PERL
 +ifdef USE_GITWEB
  $(SCRIPT_PERL_GEN) git-instaweb: % : unimplemented.sh
- 	$(QUIET_GEN)$(RM) $@ $@+ && \
+ 	$(QUIET_GEN) \
  	sed -e '1s|#!.*/sh|#!$(SHELL_PATH_SQ)|' \
-@@ -2279,8 +2288,10 @@ $(SCRIPT_PERL_GEN) git-instaweb: % : unimplemented.sh
+@@ -2378,8 +2387,10 @@ $(SCRIPT_PERL_GEN) git-instaweb: % : unimplemented.sh
  	    unimplemented.sh >$@+ && \
  	chmod +x $@+ && \
  	mv $@+ $@
@@ -71,7 +82,7 @@ index 09f98b777c..b0aba19436 100644
  # This makes sure we depend on the NO_PYTHON setting itself.
  $(SCRIPT_PYTHON_GEN): GIT-BUILD-OPTIONS
  
-@@ -2920,7 +2931,9 @@ ifndef NO_PERL
+@@ -3044,7 +3055,9 @@ ifndef NO_PERL
  	$(INSTALL) -d -m 755 '$(DESTDIR_SQ)$(perllibdir_SQ)'
  	(cd perl/build/lib && $(TAR) cf - .) | \
  	(cd '$(DESTDIR_SQ)$(perllibdir_SQ)' && umask 022 && $(TAR) xof -)
@@ -81,10 +92,10 @@ index 09f98b777c..b0aba19436 100644
  endif
  ifndef NO_TCLTK
  	$(MAKE) -C gitk-git install
-@@ -2972,12 +2985,16 @@ endif
+@@ -3098,11 +3111,16 @@ endif
+ 		  ln -s "git-remote-http$X" "$$execdir/$$p" 2>/dev/null || \
  		  cp "$$execdir/git-remote-http$X" "$$execdir/$$p" || exit; } \
- 	done && \
- 	./check_bindir "z$$bindir" "z$$execdir" "$$bindir/git-add$X"
+ 	done
 -
 +ifdef USE_GITWEB
  .PHONY: install-gitweb install-doc install-man install-man-perl install-html install-info install-pdf
@@ -95,12 +106,11 @@ index 09f98b777c..b0aba19436 100644
 +ifdef USE_GITWEB
  install-gitweb:
  	$(MAKE) -C gitweb install
--
 +endif
+ 
  install-doc: install-man-perl
  	$(MAKE) -C Documentation install
- 
-@@ -3113,7 +3130,9 @@ clean: profile-clean coverage-clean cocciclean
+@@ -3246,7 +3264,9 @@ clean: profile-clean coverage-clean cocciclean
  	$(MAKE) -C Documentation/ clean
  	$(RM) Documentation/GIT-EXCLUDED-PROGRAMS
  ifndef NO_PERL
@@ -110,13 +120,13 @@ index 09f98b777c..b0aba19436 100644
  	$(RM) -r perl/build/
  endif
  	$(MAKE) -C templates/ clean
-@@ -3148,7 +3167,9 @@ endif
- ALL_COMMANDS = $(ALL_PROGRAMS) $(SCRIPT_LIB) $(BUILT_INS)
- ALL_COMMANDS += git
+@@ -3283,7 +3303,9 @@ ALL_COMMANDS += git
+ ALL_COMMANDS += git-citool
+ ALL_COMMANDS += git-gui
  ALL_COMMANDS += gitk
 +ifdef USE_GITWEB
  ALL_COMMANDS += gitweb
 +endif
- ALL_COMMANDS += git-gui git-citool
  
  .PHONY: check-docs
+ check-docs::

@@ -11,7 +11,7 @@
 %global use_new_rpm_filters 1
 
 Name:           git
-Version:        2.26.2
+Version:        0
 Release:        1
 Summary:        Fast Version Control System
 License:        GPLv2
@@ -222,16 +222,6 @@ export SOURCE_DATE_EPOCH=$(date -r version +%%s 2>/dev/null)
 # contrib/svn-fe which all require python2.
 rm -rf contrib/fast-import/import-zips.py contrib/hg-to-git contrib/svn-fe
 
-# The multimail hook is installed with git.  Use python3 to avoid an
-# unnecessary python2 dependency, if possible.
-%if %{with python3}
-sed -i -e '1s@#!\( */usr/bin/env python\|%{__python2}\)$@#!%{__python3}@' \
-    contrib/hooks/multimail/git_multimail.py \
-    contrib/hooks/multimail/migrate-mailhook-config \
-    contrib/hooks/multimail/post-receive.example
-%endif
-# endif with python3
-
 %install
 %make_install %{?with_docs:install-doc}
 
@@ -305,9 +295,6 @@ mkdir -p %{buildroot}%{_localstatedir}/lib/git
 mkdir -p %{buildroot}%{_datadir}/git-core/contrib/completion
 install -pm 644 contrib/completion/git-completion.tcsh \
     %{buildroot}%{_datadir}/git-core/contrib/completion/
-
-# Drop .py extension from git_multimail to avoid byte-compiling
-mv contrib/hooks/multimail/git_multimail{.py,}
 
 # Move contrib/hooks out of %%docdir
 mkdir -p %{buildroot}%{_datadir}/git-core/contrib
@@ -398,7 +385,6 @@ exit 0
 
 %files -f bin-man-doc-git-files
 %{_datadir}/git-core/contrib/diff-highlight
-%{_datadir}/git-core/contrib/hooks/multimail
 %{_datadir}/git-core/contrib/hooks/update-paranoid
 %{_datadir}/git-core/contrib/hooks/setgitperms.perl
 %{_datadir}/git-core/templates/hooks/fsmonitor-watchman.sample
@@ -415,7 +401,6 @@ exit 0
 %license COPYING
 # exclude is best way here because of troubles with symlinks inside git-core/
 %exclude %{_datadir}/git-core/contrib/diff-highlight
-%exclude %{_datadir}/git-core/contrib/hooks/multimail
 %exclude %{_datadir}/git-core/contrib/hooks/update-paranoid
 %exclude %{_datadir}/git-core/contrib/hooks/setgitperms.perl
 %exclude %{_datadir}/git-core/templates/hooks/fsmonitor-watchman.sample
