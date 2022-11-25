@@ -1,0 +1,182 @@
+From 794c000267b7bd29024b56e282509a82b31e6fc8 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Ren=C3=A9=20Scharfe?= <l.s.r@web.de>
+Date: Fri, 17 Dec 2021 17:48:49 +0100
+Subject: [PATCH] log: let --invert-grep only invert --grep
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+The option --invert-grep is documented to filter out commits whose
+messages match the --grep filters.  However, it also affects the
+header matches (--author, --committer), which is not intended.
+
+Move the handling of that option to grep.c, as only the code there can
+distinguish between matches in the header from those in the message
+body.  If --invert-grep is given then enable extended expressions (not
+the regex type, we just need git grep's --not to work), negate the body
+patterns and check if any of them match by piggy-backing on the
+collect_hits mechanism of grep_source_1().
+
+Collecting the matches in struct grep_opt is a bit iffy, but with
+"last_shown" we have a precedent for writing state information to that
+struct.
+
+Reported-by: Dotan Cohen <dotancohen@gmail.com>
+Signed-off-by: René Scharfe <l.s.r@web.de>
+Signed-off-by: Junio C Hamano <gitster@pobox.com>
+---
+ grep.c         | 22 +++++++++++++++++++---
+ grep.h         |  2 ++
+ revision.c     |  4 ++--
+ revision.h     |  2 --
+ t/t4202-log.sh | 19 +++++++++++++++++++
+ 5 files changed, 42 insertions(+), 7 deletions(-)
+
+diff --git a/grep.c b/grep.c
+index fe847a0111..beef5fe47e 100644
+--- a/grep.c
++++ b/grep.c
+@@ -699,6 +699,14 @@ static struct grep_expr *compile_pattern_expr(struct grep_pat **list)
+ 	return compile_pattern_or(list);
+ }
+ 
++static struct grep_expr *grep_not_expr(struct grep_expr *expr)
++{
++	struct grep_expr *z = xcalloc(1, sizeof(*z));
++	z->node = GREP_NODE_NOT;
++	z->u.unary = expr;
++	return z;
++}
++
+ static struct grep_expr *grep_true_expr(void)
+ {
+ 	struct grep_expr *z = xcalloc(1, sizeof(*z));
+@@ -797,7 +805,7 @@ void compile_grep_patterns(struct grep_opt *opt)
+ 		}
+ 	}
+ 
+-	if (opt->all_match || header_expr)
++	if (opt->all_match || opt->no_body_match || header_expr)
+ 		opt->extended = 1;
+ 	else if (!opt->extended)
+ 		return;
+@@ -808,6 +816,9 @@ void compile_grep_patterns(struct grep_opt *opt)
+ 	if (p)
+ 		die("incomplete pattern expression: %s", p->pattern);
+ 
++	if (opt->no_body_match && opt->pattern_expression)
++		opt->pattern_expression = grep_not_expr(opt->pattern_expression);
++
+ 	if (!header_expr)
+ 		return;
+ 
+@@ -1057,6 +1068,8 @@ static int match_expr_eval(struct grep_opt *opt, struct grep_expr *x,
+ 			if (h && (*col < 0 || tmp.rm_so < *col))
+ 				*col = tmp.rm_so;
+ 		}
++		if (x->u.atom->token == GREP_PATTERN_BODY)
++			opt->body_hit |= h;
+ 		break;
+ 	case GREP_NODE_NOT:
+ 		/*
+@@ -1825,16 +1838,19 @@ int grep_source(struct grep_opt *opt, struct grep_source *gs)
+ 	 * we do not have to do the two-pass grep when we do not check
+ 	 * buffer-wide "all-match".
+ 	 */
+-	if (!opt->all_match)
++	if (!opt->all_match && !opt->no_body_match)
+ 		return grep_source_1(opt, gs, 0);
+ 
+ 	/* Otherwise the toplevel "or" terms hit a bit differently.
+ 	 * We first clear hit markers from them.
+ 	 */
+ 	clr_hit_marker(opt->pattern_expression);
++	opt->body_hit = 0;
+ 	grep_source_1(opt, gs, 1);
+ 
+-	if (!chk_hit_marker(opt->pattern_expression))
++	if (opt->all_match && !chk_hit_marker(opt->pattern_expression))
++		return 0;
++	if (opt->no_body_match && opt->body_hit)
+ 		return 0;
+ 
+ 	return grep_source_1(opt, gs, 0);
+diff --git a/grep.h b/grep.h
+index 3e8815c347..6a1f0ab017 100644
+--- a/grep.h
++++ b/grep.h
+@@ -148,6 +148,8 @@ struct grep_opt {
+ 	int word_regexp;
+ 	int fixed;
+ 	int all_match;
++	int no_body_match;
++	int body_hit;
+ #define GREP_BINARY_DEFAULT	0
+ #define GREP_BINARY_NOMATCH	1
+ #define GREP_BINARY_TEXT	2
+diff --git a/revision.c b/revision.c
+index 1981a0859f..97a06bc8fe 100644
+--- a/revision.c
++++ b/revision.c
+@@ -2493,7 +2493,7 @@ static int handle_revision_opt(struct rev_info *revs, int argc, const char **arg
+ 	} else if (!strcmp(arg, "--all-match")) {
+ 		revs->grep_filter.all_match = 1;
+ 	} else if (!strcmp(arg, "--invert-grep")) {
+-		revs->invert_grep = 1;
++		revs->grep_filter.no_body_match = 1;
+ 	} else if ((argcount = parse_long_opt("encoding", argv, &optarg))) {
+ 		if (strcmp(optarg, "none"))
+ 			git_log_output_encoding = xstrdup(optarg);
+@@ -3778,7 +3778,7 @@ static int commit_match(struct commit *commit, struct rev_info *opt)
+ 				     (char *)message, strlen(message));
+ 	strbuf_release(&buf);
+ 	unuse_commit_buffer(commit, message);
+-	return opt->invert_grep ? !retval : retval;
++	return retval;
+ }
+ 
+ static inline int want_ancestry(const struct rev_info *revs)
+diff --git a/revision.h b/revision.h
+index 5578bb4720..3f66147bfd 100644
+--- a/revision.h
++++ b/revision.h
+@@ -246,8 +246,6 @@ struct rev_info {
+ 
+ 	/* Filter by commit log message */
+ 	struct grep_opt	grep_filter;
+-	/* Negate the match of grep_filter */
+-	int invert_grep;
+ 
+ 	/* Display history graph */
+ 	struct git_graph *graph;
+diff --git a/t/t4202-log.sh b/t/t4202-log.sh
+index 7884e3d46b..765742fdbc 100755
+--- a/t/t4202-log.sh
++++ b/t/t4202-log.sh
+@@ -2010,4 +2010,23 @@ test_expect_success 'log --end-of-options' '
+        test_cmp expect actual
+ '
+ 
++test_expect_success 'set up commits with different authors' '
++	git checkout --orphan authors &&
++	test_commit --author "Jim <jim@example.com>" jim_1 &&
++	test_commit --author "Val <val@example.com>" val_1 &&
++	test_commit --author "Val <val@example.com>" val_2 &&
++	test_commit --author "Jim <jim@example.com>" jim_2 &&
++	test_commit --author "Val <val@example.com>" val_3 &&
++	test_commit --author "Jim <jim@example.com>" jim_3
++'
++
++test_expect_success 'log --invert-grep --grep --author' '
++	cat >expect <<-\EOF &&
++	val_3
++	val_1
++	EOF
++	git log --format=%s --author=Val --grep 2 --invert-grep >actual &&
++	test_cmp expect actual
++'
++
+ test_done
+-- 
+2.37.3
+

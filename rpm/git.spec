@@ -18,6 +18,7 @@ License:        GPLv2
 URL:            https://github.com/sailfishos/git
 Source0:        %{name}-%{version}.tar.bz2
 Patch0:         0001-disable-gitweb.patch
+Patch1:         0002-log-let-invert-grep-only-invert-grep.patch
 
 BuildRequires:  desktop-file-utils
 BuildRequires:  expat-devel
