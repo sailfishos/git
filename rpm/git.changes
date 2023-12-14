@@ -30,7 +30,7 @@
 * Thu Jun 07 2012 David Greaves <david@dgreaves.com> - 1.7.10.3
 - New upstream
 
-* Wed May 21 2012 David Greaves <david@dgreaves.com> - 1.7.2.2
+* Mon May 21 2012 David Greaves <david@dgreaves.com> - 1.7.2.2
 - Remove rsync Requires - we'd like to Suggest: or Recommend: it but meh, our rpm doesn't do that
 - Make the python macros version independent
 

@@ -11,14 +11,12 @@
 %global use_new_rpm_filters 1
 
 Name:           git
-Version:        2.34.6
+Version:        2.43.0
 Release:        1
 Summary:        Fast Version Control System
 License:        GPLv2
 URL:            https://github.com/sailfishos/git
 Source0:        %{name}-%{version}.tar.bz2
-Patch0:         0001-disable-gitweb.patch
-Patch1:         0002-log-let-invert-grep-only-invert-grep.patch
 
 BuildRequires:  desktop-file-utils
 BuildRequires:  expat-devel
@@ -173,6 +171,7 @@ INSTALL_SYMLINKS = 1
 GNU_ROFF = 1
 NO_PERL_CPAN_FALLBACKS = 1
 NO_PYTHON = 1
+NO_GITWEB = 1
 htmldir = %{?_pkgdocdir}%{!?_pkgdocdir:%{_docdir}/%{name}-%{version}}
 prefix = %{_prefix}
 perllibdir = %{perl_vendorlib}
@@ -351,6 +350,7 @@ cp -pr CODE_OF_CONDUCT.md README.md Documentation/*.txt Documentation/RelNotes c
 rm -rf %{buildroot}%{_pkgdocdir}/contrib/{contacts,credential,svn-fe}/
 
 # Remove unneeded gitweb and instaweb files
+rm -f %{buildroot}%{gitexecdir}/git-instaweb
 rm -f %{buildroot}%{_pkgdocdir}/git-instaweb.txt
 rm -f %{buildroot}%{_pkgdocdir}/gitweb.conf.txt
 rm -f %{buildroot}%{_pkgdocdir}/gitweb.txt
