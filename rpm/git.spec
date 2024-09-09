@@ -11,7 +11,7 @@
 %global use_new_rpm_filters 1
 
 Name:           git
-Version:        2.43.0
+Version:        2.46.0
 Release:        1
 Summary:        Fast Version Control System
 License:        GPLv2
