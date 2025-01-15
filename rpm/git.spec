@@ -11,7 +11,7 @@
 %global use_new_rpm_filters 1
 
 Name:           git
-Version:        2.46.0
+Version:        2.48.1
 Release:        1
 Summary:        Fast Version Control System
 License:        GPLv2
@@ -182,7 +182,7 @@ GIT_PROVE_OPTS = --verbose --normalize %{?_smp_mflags} --formatter=TAP::Formatte
 GIT_TEST_OPTS = -x --verbose-log
 EOF
 
-# Filter bogus perl requires	
+# Filter bogus perl requires
 # packed-refs comes from a comment in contrib/hooks/update-paranoid
 %if %{use_new_rpm_filters}
 %{?perl_default_filter}
@@ -197,7 +197,7 @@ cat << \EOF > %{name}-req
 %{__perl_requires} $* |\
 sed -e '/perl(packed-refs)/d'
 EOF
-	
+
 %global __perl_requires %{_builddir}/%{name}-%{version}/%{name}-req
 chmod +x %{__perl_requires}
 %endif
