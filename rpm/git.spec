@@ -11,7 +11,7 @@
 %global use_new_rpm_filters 1
 
 Name:           git
-Version:        2.48.1
+Version:        2.49.0
 Release:        1
 Summary:        Fast Version Control System
 License:        GPLv2
@@ -344,20 +344,20 @@ grep -E "$not_core_re" bin-man-doc-files > bin-man-doc-git-files
 not_core_doc_re="(git-(cvs|gui|citool|daemon|instaweb|subtree))|p4|svn|email|gitk|gitweb"
 
 mkdir -p %{buildroot}%{_pkgdocdir}/
-cp -pr CODE_OF_CONDUCT.md README.md Documentation/*.txt Documentation/RelNotes contrib %{buildroot}%{_pkgdocdir}/
+cp -pr CODE_OF_CONDUCT.md README.md Documentation/*.adoc Documentation/RelNotes contrib %{buildroot}%{_pkgdocdir}/
 
 # Remove contrib/ files/dirs which have nothing useful for documentation
 rm -rf %{buildroot}%{_pkgdocdir}/contrib/{contacts,credential,svn-fe}/
 
 # Remove unneeded gitweb and instaweb files
 rm -f %{buildroot}%{gitexecdir}/git-instaweb
-rm -f %{buildroot}%{_pkgdocdir}/git-instaweb.txt
-rm -f %{buildroot}%{_pkgdocdir}/gitweb.conf.txt
-rm -f %{buildroot}%{_pkgdocdir}/gitweb.txt
+rm -f %{buildroot}%{_pkgdocdir}/git-instaweb.adoc
+rm -f %{buildroot}%{_pkgdocdir}/gitweb.conf.adoc
+rm -f %{buildroot}%{_pkgdocdir}/gitweb.adoc
 
 # Remove unneeded git-daemon files
 rm -f %{buildroot}%{gitexecdir}/git-daemon
-rm -f %{buildroot}%{_pkgdocdir}/git-daemon.txt
+rm -f %{buildroot}%{_pkgdocdir}/git-daemon.adoc
 
 %if %{with docs}
 cp -pr Documentation/*.html Documentation/docbook-xsl.css %{buildroot}%{_pkgdocdir}/
@@ -413,13 +413,13 @@ exit 0
 %{_pkgdocdir}/contrib/hooks
 
 %files email
-%{_pkgdocdir}/*email*.txt
+%{_pkgdocdir}/*email*.adoc
 %{gitexecdir}/*email*
 %{?with_docs:%{_mandir}/man1/*email*.1*}
 %{?with_docs:%{_pkgdocdir}/*email*.html}
 
 %files -n gitk
-%{_pkgdocdir}/*gitk*.txt
+%{_pkgdocdir}/*gitk*.adoc
 %{_bindir}/*gitk*
 %{_datadir}/gitk
 %{?with_docs:%{_mandir}/man1/*gitk*.1*}
@@ -429,8 +429,8 @@ exit 0
 %{gitexecdir}/git-gui*
 %{gitexecdir}/git-citool
 %{_datadir}/git-gui/
-%{_pkgdocdir}/git-gui.txt
-%{_pkgdocdir}/git-citool.txt
+%{_pkgdocdir}/git-gui.adoc
+%{_pkgdocdir}/git-citool.adoc
 %{?with_docs:%{_mandir}/man1/git-gui.1*}
 %{?with_docs:%{_pkgdocdir}/git-gui.html}
 %{?with_docs:%{_mandir}/man1/git-citool.1*}
@@ -444,5 +444,5 @@ exit 0
 %files subtree
 %{gitexecdir}/git-subtree
 %{gitexecdir}/git-svn
-%{_pkgdocdir}/git-svn.txt
+%{_pkgdocdir}/git-svn.adoc
 
