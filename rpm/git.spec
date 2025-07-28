@@ -11,7 +11,7 @@
 %global use_new_rpm_filters 1
 
 Name:           git
-Version:        2.49.0
+Version:        2.50.1
 Release:        1
 Summary:        Fast Version Control System
 License:        GPLv2
@@ -408,6 +408,7 @@ exit 0
 %exclude %{_datadir}/git-core/templates/hooks/pre-rebase.sample
 %exclude %{_datadir}/git-core/templates/hooks/prepare-commit-msg.sample
 %{_datadir}/git-core/
+%{_datadir}/bash-completion/completions/git
 
 %files core-doc -f man-doc-files-core
 %{_pkgdocdir}/contrib/hooks
